@@ -1,0 +1,3 @@
+[submodule "src/chromium/src"]
+	path = src/chromium/src
+	url = git@github.com:shivamidow/deview-chromium.git
