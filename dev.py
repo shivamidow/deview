@@ -358,7 +358,7 @@ def main():
     environment = os.environ.copy()
     environment['PATH'] += os.pathsep + sysconfig.get_paths()['scripts']
     if command == 'init':
-#        subprocess_run([TOOLS_PATH + '/install-dependencies'])
+        subprocess_run([TOOLS_PATH + '/install-dependencies'])
 
         environment['DEPOT_TOOLS_UPDATE'] = '0'
         subprocess_run(['gclient', 'sync', '-D', '--force', '--reset', '--jobs=' + str(CPU_COUNT)],

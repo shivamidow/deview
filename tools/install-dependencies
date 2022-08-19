@@ -1,0 +1,180 @@
+#!/bin/bash
+
+# This script needs to be run with root rights.
+if [ $UID -ne 0 ]; then
+    sudo $0
+    exit 0
+fi
+
+function printNotSupportedMessageAndExit() {
+    echo
+    echo "Currently this script only works for distributions supporting apt-get and yum."
+    echo
+    exit 1
+}
+
+function checkInstaller {
+    # apt-get - Debian based distributions
+    apt-get --version &> /dev/null
+    if [ $? -eq 0 ]; then
+        installDependenciesWithApt
+        installDependenciesWithPip3
+        exit 0
+    fi
+
+    # dnf - Fedora
+    dnf --version &> /dev/null
+    if [ $? -eq 0 ]; then
+        installDependenciesWithDnf
+        installDependenciesWithPip3
+        exit 0
+    fi
+
+    # pacman - Arch Linux
+    # pacman --version and pacman --help both return non-0
+    pacman -Ss &> /dev/null
+    if [ $? -eq 0 ]; then
+        installDependenciesWithPacman
+        exit 0
+    fi
+
+    port version &> /dev/null
+    if [ $? -eq 0 ]; then
+        installDependenciesWithPort
+        installDependenciesWithPip3
+        exit 0
+    fi
+
+    printNotSupportedMessageAndExit
+}
+
+# If the package $1 is available, prints it. Otherwise prints $2.
+# Useful for handling when a package is renamed on new versions of Debian/Ubuntu.
+function aptIfElse {
+    if apt-cache show $1 &>/dev/null; then
+        echo $1
+    else
+        echo $2
+    fi
+}
+
+function installDependenciesWithApt {
+    # These are dependencies necessary for building chromium.
+    packages=" \
+        "
+
+    # These are dependencies necessary for others.
+    packages="$packages \
+        nodejs \
+        python3-pip"
+
+    apt-get install $packages
+}
+
+function installDependenciesWithPacman {
+    # These are dependencies necessary for building chromium.
+    packages=" \
+        "
+
+    # These are dependencies necessary for others.
+    packages="$packages \
+        "
+
+    pacman -S --needed $packages
+}
+
+function installDependenciesWithPort {
+    # These are dependencies necessary for building chromium.
+    packages=" \
+        "
+
+    # These are dependencies necessary for others.
+    packages="$packages \
+        npm6 \
+        nss \
+        py37-pip \
+        "
+
+    port install $packages
+}
+
+function installDependenciesWithDnf {
+    # These are dependencies necessary for building chromium.
+    packages=" \
+        git \
+        python \
+        bzip2 \
+        tar \
+        pkgconfig \
+        atk-devel \
+        alsa-lib-devel \
+        bison \
+        binutils \
+        brlapi-devel \
+        bluez-libs-devel \
+        bzip2-devel \
+        cairo-devel \
+        cups-devel \
+        dbus-devel \
+        dbus-glib-devel \
+        expat-devel \
+        fontconfig-devel \
+        freetype-devel \
+        gcc-c++ \
+        glib2-devel \
+        glibc.i686 \
+        gperf \
+        glib2-devel \
+        gtk3-devel \
+        java-1.*.0-openjdk-devel \
+        libatomic \
+        libcap-devel \
+        libffi-devel \
+        libgcc.i686 \
+        libgnome-keyring-devel \
+        libjpeg-devel \
+        libstdc++.i686 \
+        libX11-devel \
+        libXScrnSaver-devel \
+        libXtst-devel \
+        libxkbcommon-x11-devel \
+        ncurses-compat-libs \
+        nspr-devel \
+        nss-devel \
+        pam-devel \
+        pango-devel \
+        pciutils-devel \
+        pulseaudio-libs-devel \
+        python3-matplotlib \
+        zlib.i686 \
+        httpd \
+        mod_ssl \
+        php \
+        php-cli \
+        python-psutil \
+        wdiff \
+        xorg-x11-server-Xvfb"
+
+    # These are dependencies necessary for others.
+    packages="$packages \
+        nss-tools \
+        nodejs \
+        python3-pip"
+
+    dnf install $packages
+}
+
+function installDependenciesWithPip3 {
+    # These are dependencies necessary for others.
+    packages=" \
+        cxxfilt \
+        jellyfish \
+        pyelftools \
+        requests \
+        validators"
+
+    pip3 install -U pip
+    pip3 install $packages
+}
+
+checkInstaller
