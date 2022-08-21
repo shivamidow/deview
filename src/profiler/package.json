@@ -1,0 +1,20 @@
+{
+  "name": "Web API Profiler",
+  "version": "1.0.0",
+  "description": "This is a puppeteer application that profiles what web API a PWA uses by replaying the user's behaviors.",
+  "main": "replay.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Web API",
+    "Profiling",
+    "Record and Replay"
+  ],
+  "author": "ChangSeok Oh",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "file:../puppeteer",
+    "yargs": "^15.3.1"
+  }
+}

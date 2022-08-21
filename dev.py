@@ -29,9 +29,8 @@ CR_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'release'))
 CR_IR_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'ir'))
 CR_PROFILING_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'profiling'))
 CR_MARKING_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'marking'))
+PROFILER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'profiler'))
 PUPPETEER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'puppeteer'))
-PUPPETEER_CLUSTER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'puppeteer-cluster'))
-CRAWLER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'crawler'))
 SAMPLE_PWA_PATH = os.path.normpath(os.path.join(SRC_PATH, 'your-first-pwapp'))
 SERVER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'server'))
 SLIMIUM_PATH = os.path.normpath(os.path.join(SRC_PATH, 'slimium'))
@@ -43,7 +42,7 @@ HOME_PATH = os.path.expanduser('~')
 CR_DEFAULT_PROFILE_PATH = os.path.join(HOME_PATH, '.config', 'chromium', 'Default')
 CR_PROFILING_PROFILE_PATH = os.path.join(HOME_PATH, '.config', 'chromium-profiling', 'Default')
 
-"""
+""" Sample App IDs
 AlarmDJ: igmjclednlndjgjifdnigbdecnfcpgnj
 AliExpress: lhkiobkckaniiagpmaimjbmldgpcnpgl
 ChromeStatus: fedbieoalmbobgfjapopkghdmhgncnaa
@@ -53,8 +52,6 @@ Uber: gijapfmjjfpakmbadajegooepglckjbg
 Spotify: pjibgclleladliembfgfagdaldikeohf
 Telegram: hadgilakbfohcfcgfbioeeehgpkopaga
 Trivago: bbmbfpmmjcblnkdiipfnekpicpoabiho
-
-For more app IDs, refer eval/appid.md
 """
 PWA_DEFAULT_ID = 'oonpikaeehoaiikcikkcnadhgaigameg'
 
@@ -251,34 +248,9 @@ def build_11vm(env):
     subprocess_run(['make', '-j' + str(CPU_COUNT)], cwd=build_path, env=env)
 
 
-def build_puppeteer(env):
-    if not os.path.isdir(PUPPETEER_PATH + '/node_modules'):
-        env['PUPPETEER_SKIP_CHROMIUM_DOWNLOAD'] = '1'
-        subprocess_run(['npm', 'install'], cwd=PUPPETEER_PATH, env=env)
-
-#    cr_exe_path = os.path.join(CR_BUILD_PATH, 'chrome')
-#    if sys.platform == 'darwin':
-#        cr_exe_path = os.path.join(CR_BUILD_PATH, 'Chromium.app', 'Contents', 'MacOS', 'Chromium')
-#    env['PUPPETEER_EXECUTABLE_PATH'] = cr_exe_path
-#    subprocess_run(['npm', 'run-script', 'build'], cwd=PUPPETEER_PATH, env=env)
-
-
-def build_puppeteer_cluster(env):
-    if not os.path.isdir(PUPPETEER_CLUSTER_PATH + '/node_modules'):
-        env['PUPPETEER_SKIP_CHROMIUM_DOWNLOAD'] = '1'
-        subprocess_run(['npm', 'install', '../puppeteer'], cwd=PUPPETEER_CLUSTER_PATH, env=env)
-    subprocess_run(['npm', 'run-script', 'build'], cwd=PUPPETEER_CLUSTER_PATH)
-
-
-def build_crawler(env):
-    if not os.path.isdir(CRAWLER_PATH + '/node_modules'):
-        env['PUPPETEER_SKIP_CHROMIUM_DOWNLOAD'] = '1'
-        subprocess_run(['npm', 'install'], cwd=CRAWLER_PATH, env=env)
-#    subprocess_run(['npm', 'run-script', 'build'], cwd=CRAWLER_PATH)
-
-
 def build_node_module(env, path):
     if not os.path.isdir(path + '/node_modules'):
+        env['PUPPETEER_SKIP_CHROMIUM_DOWNLOAD'] = '1'
         subprocess_run(['npm', 'install'], cwd=path, env=env)
 #    subprocess_run(['npm', 'run-script', 'build'], cwd=path)
 
@@ -312,9 +284,9 @@ def run_profiling(env):
 #        subprocess_run(['./chrome', '--app-id=%s' % PWA_DEFAULT_ID], cwd=CR_PROFILING_BUILD_PATH)
 #        subprocess_run(['./chrome', '--incognito', 'http://app.starbucks.com'], cwd=CR_PROFILING_BUILD_PATH)
         for test in sorted(tests):
-            subprocess_run(['node', './replay.js', test, '--app-id=%s' % PWA_DEFAULT_ID, '--wait-for=2000'], cwd=CRAWLER_PATH)
+            subprocess_run(['node', './replay.js', test, '--app-id=%s' % PWA_DEFAULT_ID, '--wait-for=2000'], cwd=PROFILER_PATH)
         # Monkey test
-#        subprocess_run(['node', './monkey.js', '--app-id=%s' % PWA_DEFAULT_ID, '--wait-for=240000'], cwd=CRAWLER_PATH)
+#        subprocess_run(['node', './monkey.js', '--app-id=%s' % PWA_DEFAULT_ID, '--wait-for=240000'], cwd=PROFILER_PATH)
         profiling_count -= 1
     print('elapsed time: {} seconds'.format(round(time.time() - now, 2)))
 
@@ -329,7 +301,7 @@ def run_profiling(env):
                 i += 2
 
     output = subprocess_run(['./shm_decode'], cwd=shm_path, stdout=subprocess.PIPE).stdout
-    profile_result_path = os.path.join(CRAWLER_PATH, 'shm_decode.txt')
+    profile_result_path = os.path.join(PROFILER_PATH, 'shm_decode.txt')
     with open(profile_result_path, 'w') as f:
         for line in output.splitlines()[:-1]:
             line = line.decode('utf-8')
@@ -383,15 +355,9 @@ def main():
                 cr_config = SLIMIUM_BUILD_CONFIG + ['enable_slimium_ir=true']
                 subprocess_run(['gn', 'gen', 'out/ir', '--args=' + ' '.join(cr_config)], cwd=CR_PATH)
             if 'puppeteer' in args.command_args:
-                build_puppeteer(environment)
-            if 'puppeteer-cluster' in args.command_args:
-                build_puppeteer_cluster(environment)
-            if 'crawler' in args.command_args:
-                build_crawler(environment)
-            if 'pwa' in args.command_args:
-                build_node_module(environment, SAMPLE_PWA_PATH)
-            if 'server' in args.command_args:
-                build_node_module(environment, SERVER_PATH)
+                build_node_module(environment, PUPPETEER_PATH)
+            if 'profiler' in args.command_args:
+                build_node_module(environment, PROFILER_PATH)
             if '11vm' in args.command_args:
                 build_11vm(environment)
         else:
@@ -400,13 +366,11 @@ def main():
             build_chromium_ir(environment)
             build_chromium_profiling(environment)
             build_chromium_marking(environment)
-            build_puppeteer(environment)
-            build_puppeteer_cluster(environment)
-            build_node_module(environment, SERVER_PATH)
-#            build_node_module(environment, SAMPLE_PWA_PATH)
+            build_node_module(environment, PUPPETEER_PATH)
+            build_node_module(environment, PROFILER_PATH)
     elif command == 'clean':
         subprocess_run(['rm', '-rf', CR_BUILD_PATH])
-        for path in [PUPPETEER_CLUSTER_PATH, PUPPETEER_PATH]:
+        for path in [PUPPETEER_PATH]:
             subprocess_run(['rm', '-rf', path + '/node_modules'])
     elif command == 'run':
         if len(args.command_args) == 1:
@@ -418,8 +382,6 @@ def main():
 
             if arg == 'server' :
                 subprocess_run(['node', './index.js'], cwd=SERVER_PATH)
-            elif arg == 'crawler':
-                subprocess_run(['node', './index.js'], cwd=CRAWLER_PATH)
             elif arg == 'debloating':
                 if run_profiling(environment):
                     shm_decode = os.path.join(CR_MARKING_BUILD_PATH, 'shm_decode.txt')
