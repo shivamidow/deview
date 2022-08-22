@@ -7,6 +7,12 @@ DeView is a debloating system that eliminates unnecessary web features from a PW
 through exercising a PWA and generates custom-fit web engine binaries for the PWA
 by wiping out unused web APIs.
 
+Environment
+-----------
+We tested DeView on following systems.
+* Fedora 36
+* Ubuntu 22.04 LTS
+
 Version Info
 ------------
 * Clang / LLVM: 10.0.0 (pre-release, c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
@@ -35,14 +41,25 @@ $ python3 dev.py init
 ```
 
 ### Build ###
-
-
 We can build slimium and chromium by running commands below in order.
 ```bash
 $ python3 dev.py build 11vm
 $ python3 dev.py build cr-ir
 $ python3 dev.py build cr-profiling
 $ python3 dev.py build cr-marking
+$ python3 dev.py build puppeteer
+$ python3 dev.py build profiler
 ```
 If we omit a target (i.e., `$ python3 dev.py build`), the build script automatically triggers all commands.
 
+Debloating a PWA
+----------------
+### Profiling ###
+```bash
+$ python3 dev.py run profiling
+```
+
+### Debloat ###
+```bash
+$ python3 dev.py run debloating
+```
