@@ -32,7 +32,6 @@ CR_MARKING_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'marking')
 PROFILER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'profiler'))
 PUPPETEER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'puppeteer'))
 SAMPLE_PWA_PATH = os.path.normpath(os.path.join(SRC_PATH, 'your-first-pwapp'))
-SERVER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'server'))
 SLIMIUM_PATH = os.path.normpath(os.path.join(SRC_PATH, 'slimium'))
 SLIMIUM_BUILD_PATH = os.path.normpath(os.path.join(SLIMIUM_PATH, 'build'))
 llVM_PATH = os.path.normpath(os.path.join(SRC_PATH, '11vm'))
@@ -339,9 +338,6 @@ def main():
         if len(args.command_args) >= 1:
             if 'cr' in args.command_args:
                 build_chromium(environment)
-            if 'cr-debloated' in args.command_args:
-                if len(args.command_args) >= 2:
-                    debloat.chromium(environment, os.path.abspath(args.command_args[1]), app_id=PWA_DEFAULT_ID)
             if 'cr-ir' in args.command_args:
                 build_chromium_ir(environment)
             if 'cr-profiling' in args.command_args:
@@ -380,12 +376,11 @@ def main():
             if sys.platform == 'darwin':
                 cr_exe = './Chromium.app/Contents/MacOS/Chromium'
 
-            if arg == 'server' :
-                subprocess_run(['node', './index.js'], cwd=SERVER_PATH)
-            elif arg == 'debloating':
-                if run_profiling(environment):
-                    shm_decode = os.path.join(CR_MARKING_BUILD_PATH, 'shm_decode.txt')
-#                    debloat.chromium(environment, shm_decode, app_id=PWA_DEFAULT_ID)
+            if arg == 'debloating':
+                shm_decode = os.path.join(CR_MARKING_BUILD_PATH, 'shm_decode.txt')
+                if len(args.command_args) >= 2:
+                    shm_decode = os.path.abspath(args.command_args[1])
+                debloat.chromium(environment, shm_decode, app_id=PWA_DEFAULT_ID)
             elif arg == 'profiling':
                 run_profiling(environment)
             elif validators.url(arg):
