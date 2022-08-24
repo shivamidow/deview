@@ -33,33 +33,62 @@ Building DeView
 Download depot_tool, check out `fe18a43d590a5eac0d58e7e555b024746ba290ad`, then
 make it accessible in the terminal.
 [This tutorial](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up) is helpful.
+```bash
+$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+$ cd depot_tools
+$ git checkout -b deview fe18a43d590a5eac0d58e7e555b024746ba290ad
+```
 
 ### Install dependencies ###
-Install dependencies including ones for chromium.
+Install dependencies including ones for chromium. This should be enough to do it once.
 ```bash
 $ python3 dev.py init
 ```
 
 ### Build ###
-We can build slimium and chromium by running commands below in order.
+We can build everything with a single instruction.
+```bash
+$ python3 dev.py build
+```
+This instruction is the same effect as invoking the following commands in order.
 ```bash
 $ python3 dev.py build 11vm
 $ python3 dev.py build cr-ir
 $ python3 dev.py build cr-profiling
 $ python3 dev.py build cr-marking
-$ python3 dev.py build puppeteer
 $ python3 dev.py build profiler
 ```
-If we omit a target (i.e., `$ python3 dev.py build`), the build script automatically triggers all commands.
+
+Profiling a PWA
+---------------
+# Create tests by recording behaviors
+We can use existing tests that
+[Headless Recorder](https://chrome.google.com/webstore/detail/headless-recorder/djeegiggegleadkkbgopoonhjimgehda?hl=en)
+generated. Otherwise, we can create new tests by using the extension.
+Install the browser extension, record, and save behaviors as tests in a directoroy.
+
+# Profiling by Replaying
+```bash
+$ python3 dev.py run profiling [test_path]
+```
+This command starts profiling web APIs a PWA (indicated by `PWA_DEFAULT_ID` in `dev.py`) uses
+by replaying all tests in the given directory. We can specify a PWA to profile with '--app-id'.
+```bash
+$ python3 dev.py --app-id=oonpikaeehoaiikcikkcnadhgaigameg run profiling [test_path]
+```
 
 Debloating a PWA
 ----------------
-### Profiling ###
+Launch a PWA in the instrumented chromium. For instance,
+we can launch the Starbucks PWA like folloiwng.
 ```bash
-$ python3 dev.py run profiling
+$ out/marking/chrome --app-id=oonpikaeehoaiikcikkcnadhgaigameg
 ```
+When a PWA is updated, the instrumented chromium automatically generates
+debloated blink libraries and saves them under
+`~/.config/chromium/Default/Extensions/$APP_ID/$VERSION/lib/`.
 
-### Debloat ###
+We can manually trigger the debloating process by using a command below.
 ```bash
-$ python3 dev.py run debloating
+$ python3 dev.py --app-id=oonpikaeehoaiikcikkcnadhgaigameg run debloating
 ```

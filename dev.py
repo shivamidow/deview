@@ -350,14 +350,12 @@ def main():
             if 'cr-ir-config' in args.command_args:
                 cr_config = SLIMIUM_BUILD_CONFIG + ['enable_slimium_ir=true']
                 subprocess_run(['gn', 'gen', 'out/ir', '--args=' + ' '.join(cr_config)], cwd=CR_PATH)
-            if 'puppeteer' in args.command_args:
-                build_node_module(environment, PUPPETEER_PATH)
             if 'profiler' in args.command_args:
+                build_node_module(environment, PUPPETEER_PATH)
                 build_node_module(environment, PROFILER_PATH)
             if '11vm' in args.command_args:
                 build_11vm(environment)
         else:
-#            build_chromium(environment)
             build_11vm(environment)
             build_chromium_ir(environment)
             build_chromium_profiling(environment)
