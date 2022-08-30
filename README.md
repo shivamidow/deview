@@ -61,13 +61,13 @@ $ python3 dev.py build profiler
 
 Profiling a PWA
 ---------------
-# Create tests by recording behaviors
+### Create tests by recording behaviors
 We can use existing tests that
 [Headless Recorder](https://chrome.google.com/webstore/detail/headless-recorder/djeegiggegleadkkbgopoonhjimgehda?hl=en)
 generated. Otherwise, we can create new tests by using the extension.
 Install the browser extension, record, and save behaviors as tests in a directoroy.
 
-# Profiling by Replaying
+### Profiling by Replaying
 ```bash
 $ python3 dev.py run profiling [test_path]
 ```
