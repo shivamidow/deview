@@ -10,8 +10,8 @@ by wiping out unused web APIs.
 Environment
 -----------
 We tested DeView on following systems.
-* Fedora 36
-* Ubuntu 22.04 LTS
+* Fedora 32
+* Ubuntu 20.04 LTS
 
 Version Info
 ------------
