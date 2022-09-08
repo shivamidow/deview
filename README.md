@@ -42,6 +42,7 @@ $ git checkout -b deview fe18a43d590a5eac0d58e7e555b024746ba290ad
 ### Install dependencies ###
 Install dependencies including ones for chromium. This should be enough to do it once.
 ```bash
+$ tools/install-dependencies
 $ python3 dev.py init
 ```
 
