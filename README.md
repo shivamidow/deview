@@ -24,7 +24,7 @@ Getting the Code
 ----------------
 This repository has a git submodule for modified Chromium.
 ```bash
-$ git clone --recurse-submodules git@github.com:shivamidow/deview.git
+$ git clone --recurse-submodules https://github.com/shivamidow/deview.git
 ```
 
 Building DeView
