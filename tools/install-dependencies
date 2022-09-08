@@ -101,6 +101,7 @@ function installDependenciesWithPort {
 function installDependenciesWithDnf {
     # These are dependencies necessary for building chromium.
     packages=" \
+        cmake \
         git \
         python \
         bzip2 \
