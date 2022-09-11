@@ -56,7 +56,7 @@ This instruction is the same effect as invoking the following commands in order.
 $ python3 dev.py build 11vm
 $ python3 dev.py build cr-ir
 $ python3 dev.py build cr-profiling
-$ python3 dev.py build cr-marking
+$ python3 dev.py build cr-debloating
 $ python3 dev.py build profiler
 ```
 
@@ -83,7 +83,7 @@ Debloating a PWA
 Launch a PWA in the instrumented chromium. For instance,
 we can launch the Starbucks PWA like folloiwng.
 ```bash
-$ out/marking/chrome --app-id=oonpikaeehoaiikcikkcnadhgaigameg
+$ out/debloating/chrome --app-id=oonpikaeehoaiikcikkcnadhgaigameg
 ```
 When a PWA is updated, the instrumented chromium automatically generates
 debloated blink libraries and saves them under

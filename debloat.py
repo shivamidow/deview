@@ -5,7 +5,7 @@ import os
 import shutil
 import time
 
-from dev import CR_DEFAULT_PROFILE_PATH, CR_MARKING_BUILD_PATH, SLIMIUM_BUILD_CONFIG, SLIMIUM_BUILD_PATH
+from dev import CR_DEFAULT_PROFILE_PATH, CR_DEBLOATING_BUILD_PATH, SLIMIUM_BUILD_CONFIG, SLIMIUM_BUILD_PATH
 from elftools.elf.elffile import ELFFile
 
 def get_func_id_token(asm, func_name, token_prefix):
@@ -147,7 +147,7 @@ def chromium(env, profile, app_id):
 
     target_bins = {}
     for name in target_bin_names:
-        bin_path = os.path.join(CR_MARKING_BUILD_PATH, name)
+        bin_path = os.path.join(CR_DEBLOATING_BUILD_PATH, name)
         if not os.path.isfile(bin_path):
             print('{} is not found.'.format(name))
             return
@@ -182,7 +182,7 @@ def chromium(env, profile, app_id):
         return
 
     for name in target_bins:
-        bin_dbt = os.path.join(CR_MARKING_BUILD_PATH, name + '.dbt')
+        bin_dbt = os.path.join(CR_DEBLOATING_BUILD_PATH, name + '.dbt')
         target_bin = target_bins[name]['path']
         shutil.copyfile(target_bin, bin_dbt)
         shutil.copymode(target_bin, bin_dbt)
@@ -200,10 +200,10 @@ def chromium(env, profile, app_id):
                     break
 
     removed_size = 0
-    removed_funcs = os.path.join(CR_MARKING_BUILD_PATH, 'removed_funcs.txt')
+    removed_funcs = os.path.join(CR_DEBLOATING_BUILD_PATH, 'removed_funcs.txt')
     if is_component_build:
-        blink_core_dbt = os.path.join(CR_MARKING_BUILD_PATH, 'libblink_core.so.dbt')
-        blink_modules_dbt = os.path.join(CR_MARKING_BUILD_PATH, 'libblink_modules.so.dbt')
+        blink_core_dbt = os.path.join(CR_DEBLOATING_BUILD_PATH, 'libblink_core.so.dbt')
+        blink_modules_dbt = os.path.join(CR_DEBLOATING_BUILD_PATH, 'libblink_modules.so.dbt')
         with open(blink_core_dbt, 'rb+') as c, open(blink_modules_dbt, 'rb+') as m, open(removed_funcs, 'w') as f:
             for func_id in removable_func_ids:
 #                assert func_id not in used_func_ids
@@ -228,7 +228,7 @@ def chromium(env, profile, app_id):
                     demangled_func_name = func_name
                 f.write('{} {:x} {:x} {} {} {}\n'.format(func_id, start_addr, end_addr, func_name, demangled_func_name, filename))
     else:
-        chrome_dbt = os.path.join(CR_MARKING_BUILD_PATH, 'chrome.dbt')
+        chrome_dbt = os.path.join(CR_DEBLOATING_BUILD_PATH, 'chrome.dbt')
         with open(chrome_dbt, 'rb+') as c, open(removed_funcs, 'w') as f:
             for func_id in removable_func_ids:
 #                assert func_id not in used_func_ids
@@ -255,7 +255,7 @@ def chromium(env, profile, app_id):
         os.makedirs(install_path, exist_ok=True)
 
     for name in target_bins:
-        bin_dbt = os.path.join(CR_MARKING_BUILD_PATH, name + '.dbt')
+        bin_dbt = os.path.join(CR_DEBLOATING_BUILD_PATH, name + '.dbt')
 #        shutil.move(bin_dbt, os.path.join(install_path, name))
         shutil.copyfile(bin_dbt, os.path.join(install_path, name))
         shutil.copymode(bin_dbt, os.path.join(install_path, name))

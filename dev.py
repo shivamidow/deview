@@ -28,7 +28,7 @@ CR_PATH = os.path.normpath(os.path.join(SRC_PATH, 'chromium', 'src'))
 CR_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'release'))
 CR_IR_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'ir'))
 CR_PROFILING_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'profiling'))
-CR_MARKING_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'marking'))
+CR_DEBLOATING_BUILD_PATH = os.path.normpath(os.path.join(CR_PATH, 'out', 'debloating'))
 PROFILER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'profiler'))
 PUPPETEER_PATH = os.path.normpath(os.path.join(SRC_PATH, 'puppeteer'))
 SAMPLE_PWA_PATH = os.path.normpath(os.path.join(SRC_PATH, 'your-first-pwapp'))
@@ -170,14 +170,14 @@ def build_chromium_profiling(env):
     subprocess_run(['autoninja', '-C', 'out/profiling', 'chrome', '-j' + str(CPU_COUNT)], cwd=CR_PATH, env=env)
 
 
-def build_chromium_marking(env):
+def build_chromium_debloating(env):
     env['SLIMIUM_UNIQUE_INDEX_PATH'] = os.path.join(SLIMIUM_BUILD_PATH, 'unique_indexes.txt')
     subprocess_run(['make', '-j' + str(CPU_COUNT)], cwd=llVM_BUILD_PATH, env=env)
 
-    if not os.path.isdir(CR_MARKING_BUILD_PATH) or not os.path.isfile(CR_MARKING_BUILD_PATH + '/args.gn'):
+    if not os.path.isdir(CR_DEBLOATING_BUILD_PATH) or not os.path.isfile(CR_DEBLOATING_BUILD_PATH + '/args.gn'):
         cr_config = SLIMIUM_BUILD_CONFIG + ['enable_slimium_web_api_marking=true']
-        subprocess_run(['gn', 'gen', 'out/marking', '--args=' + ' '.join(cr_config)], cwd=CR_PATH)
-    subprocess_run(['autoninja', '-C', 'out/marking', 'chrome', '-j' + str(CPU_COUNT)],
+        subprocess_run(['gn', 'gen', 'out/debloating', '--args=' + ' '.join(cr_config)], cwd=CR_PATH)
+    subprocess_run(['autoninja', '-C', 'out/debloating', 'chrome', '-j' + str(CPU_COUNT)],
         cwd=CR_PATH, env=env)
 
     is_component_build = False
@@ -204,12 +204,12 @@ def build_chromium_marking(env):
         }
 
         for target_bin in ['libblink_core.so', 'libblink_modules.so']:
-            asm = os.path.join(CR_MARKING_BUILD_PATH, target_bin + '.asm')
+            asm = os.path.join(CR_DEBLOATING_BUILD_PATH, target_bin + '.asm')
             asms.append(asm)
 
             with open(asm, 'w') as f:
                 subprocess_run(['objdump', '-d', '-w', '-z', '-F', '--insn-width=32', target_bin],
-                    cwd=CR_MARKING_BUILD_PATH, stdout=f)
+                    cwd=CR_DEBLOATING_BUILD_PATH, stdout=f)
 
             token = None
             target_func_names = target_func_map[target_bin]
@@ -219,11 +219,11 @@ def build_chromium_marking(env):
                     func_id_tokens.append(token)
                     break
     else:
-        chrome_asm = os.path.join(CR_MARKING_BUILD_PATH, 'chrome.asm')
+        chrome_asm = os.path.join(CR_DEBLOATING_BUILD_PATH, 'chrome.asm')
         asms.append(chrome_asm)
         with open(chrome_asm, 'w') as f:
             subprocess_run(['objdump', '-d', '-w', '-z', '-F', '--insn-width=32', 'chrome'],
-                cwd=CR_MARKING_BUILD_PATH, stdout=f)
+                cwd=CR_DEBLOATING_BUILD_PATH, stdout=f)
 
         target_func_name = '<_ZN5blinkL19HTMLBodyConstructorERNS_8DocumentE18CreateElementFlags>'
         token = debloat.get_func_id_token(chrome_asm, target_func_name, '<_DYNAMIC')
@@ -307,7 +307,7 @@ def run_profiling(env, app_id, test_path):
             f.write('{:<7} {} {} {}\n'.format(line, filename, mangled_func, func))
         print('{}'.format(output.splitlines()[-1].decode('utf-8')))
 
-    install_path = os.path.join(CR_MARKING_BUILD_PATH, 'shm_decode.txt')
+    install_path = os.path.join(CR_DEBLOATING_BUILD_PATH, 'shm_decode.txt')
     shutil.copyfile(profile_result_path, install_path)
     return True
 
@@ -335,8 +335,8 @@ def main():
                 build_chromium_ir(environment)
             if 'cr-profiling' in args.command_args:
                 build_chromium_profiling(environment)
-            if 'cr-marking' in args.command_args:
-                build_chromium_marking(environment)
+            if 'cr-debloating' in args.command_args:
+                build_chromium_debloating(environment)
             if 'cr-config' in args.command_args:
                 if not os.path.isdir(CR_BUILD_PATH) or not os.path.isfile(CR_BUILD_PATH + '/args.gn'):
                     subprocess_run(['gn', 'gen', 'out/release', '--args=' + ' '.join(CR_BUILD_CONFIG)], cwd=CR_PATH)
@@ -352,7 +352,7 @@ def main():
             build_11vm(environment)
             build_chromium_ir(environment)
             build_chromium_profiling(environment)
-            build_chromium_marking(environment)
+            build_chromium_debloating(environment)
             build_node_module(environment, PUPPETEER_PATH)
             build_node_module(environment, PROFILER_PATH)
     elif command == 'clean':
@@ -368,7 +368,7 @@ def main():
                 cr_exe = './Chromium.app/Contents/MacOS/Chromium'
 
             if arg == 'debloating':
-                shm_decode = os.path.join(CR_MARKING_BUILD_PATH, 'shm_decode.txt')
+                shm_decode = os.path.join(CR_DEBLOATING_BUILD_PATH, 'shm_decode.txt')
                 if len(args.command_args) >= 2:
                     shm_decode = os.path.abspath(args.command_args[1])
                 debloat.chromium(environment, shm_decode, app_id=args.app_id)
