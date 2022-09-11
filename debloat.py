@@ -130,6 +130,9 @@ def chromium(env, profile, app_id):
     if not os.path.isfile(profile):
         print('A profiling result is not found.')
         return
+    if not app_id:
+        print('No app id of PWA to debloat is provided.')
+        return
 
     is_component_build = False
     for config in SLIMIUM_BUILD_CONFIG:

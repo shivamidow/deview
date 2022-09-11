@@ -52,7 +52,6 @@ Spotify: pjibgclleladliembfgfagdaldikeohf
 Telegram: hadgilakbfohcfcgfbioeeehgpkopaga
 Trivago: bbmbfpmmjcblnkdiipfnekpicpoabiho
 """
-PWA_DEFAULT_ID = 'oonpikaeehoaiikcikkcnadhgaigameg'
 
 CR_BUILD_CONFIG = [
 #    'is_chrome_branded=true',
@@ -278,7 +277,7 @@ def run_profiling(env, app_id, test_path):
         profiling_count = 1
         while profiling_count > 0:
             for test in sorted(tests):
-                subprocess_run(['node', './replay.js', test, '--app-id=%s' % PWA_DEFAULT_ID, '--wait-for=2000'], cwd=PROFILER_PATH)
+                subprocess_run(['node', './replay.js', test, '--app-id=%s' % app_id, '--wait-for=2000'], cwd=PROFILER_PATH)
             profiling_count -= 1
     print('elapsed time: {} seconds'.format(round(time.time() - now, 2)))
 
@@ -370,7 +369,7 @@ def main():
                 shm_decode = os.path.join(CR_MARKING_BUILD_PATH, 'shm_decode.txt')
                 if len(args.command_args) >= 2:
                     shm_decode = os.path.abspath(args.command_args[1])
-                debloat.chromium(environment, shm_decode, app_id=PWA_DEFAULT_ID)
+                debloat.chromium(environment, shm_decode, app_id=args.app_id)
             elif arg == 'profiling':
                 if len(args.command_args) >= 2:
                     if validators.url(args.command_args[1]):
