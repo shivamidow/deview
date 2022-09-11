@@ -262,9 +262,9 @@ def run_profiling(env, app_id, test_path):
     subprocess_run(['./shm_clear'], cwd=shm_path)
 
     now = time.time()
-    if validators.url(test_path):
+    if test_path and validators.url(test_path):
         subprocess_run(['./chrome', test_path], cwd=CR_PROFILING_BUILD_PATH)
-    elif app_id:
+    elif test_path and app_id:
         replay_abs_path = os.path.abspath(test_path)
 
         tests = []
@@ -279,6 +279,8 @@ def run_profiling(env, app_id, test_path):
             for test in sorted(tests):
                 subprocess_run(['node', './replay.js', test, '--app-id=%s' % app_id, '--wait-for=2000'], cwd=PROFILER_PATH)
             profiling_count -= 1
+    elif app_id:
+        subprocess_run(['./chrome', '--app-id=%s' % app_id], cwd=CR_PROFILING_BUILD_PATH)
     print('elapsed time: {} seconds'.format(round(time.time() - now, 2)))
 
     func_id_map = {}
@@ -376,6 +378,8 @@ def main():
                         run_profiling(environment, None, args.command_args[1])
                     elif os.path.exists(args.command_args[1]):
                         run_profiling(environment, args.app_id, args.command_args[1])
+                else:
+                    run_profiling(environment, args.app_id, None)
             elif validators.url(arg):
                 subprocess_run([cr_exe, '--remote-debugging-port=9222',
                     '--disk-cache-dir=/dev/null',
