@@ -254,7 +254,7 @@ def build_node_module(env, path):
 #    subprocess_run(['npm', 'run-script', 'build'], cwd=path)
 
 
-def run_profiling(env):
+def run_profiling(env, app_id, test_path):
     shm_path = os.path.join(SLIMIUM_PATH, 'src', 'shm')
     if not os.path.isfile(shm_path + '/shm_clear') or not os.path.isfile(shm_path + '/shm_decode'):
         return False
@@ -262,31 +262,24 @@ def run_profiling(env):
     subprocess_run(['./shm_create'], cwd=shm_path)
     subprocess_run(['./shm_clear'], cwd=shm_path)
 
-    with open(os.path.join(CR_PROFILING_PROFILE_PATH, 'Preferences')) as f:
-        try:
-            app_path = json.load(f)['extensions']['settings'][PWA_DEFAULT_ID]['path']
-        except:
-            print('{} is not found in the preference'.format(PWA_DEFAULT_ID))
-            return False
-    replay_abs_path = os.path.join(CR_PROFILING_PROFILE_PATH, 'Extensions', app_path, 'replay')
-
-    tests = []
-    if os.path.isdir(replay_abs_path):
-        for filename in os.listdir(replay_abs_path):
-            if filename.endswith('.js'):
-                tests.append(os.path.join(replay_abs_path, filename))
-        tests.sort()
-
-    profiling_count = 1
     now = time.time()
-    while profiling_count > 0:
-#        subprocess_run(['./chrome', '--app-id=%s' % PWA_DEFAULT_ID], cwd=CR_PROFILING_BUILD_PATH)
-#        subprocess_run(['./chrome', '--incognito', 'http://app.starbucks.com'], cwd=CR_PROFILING_BUILD_PATH)
-        for test in sorted(tests):
-            subprocess_run(['node', './replay.js', test, '--app-id=%s' % PWA_DEFAULT_ID, '--wait-for=2000'], cwd=PROFILER_PATH)
-        # Monkey test
-#        subprocess_run(['node', './monkey.js', '--app-id=%s' % PWA_DEFAULT_ID, '--wait-for=240000'], cwd=PROFILER_PATH)
-        profiling_count -= 1
+    if validators.url(test_path):
+        subprocess_run(['./chrome', test_path], cwd=CR_PROFILING_BUILD_PATH)
+    elif app_id:
+        replay_abs_path = os.path.abspath(test_path)
+
+        tests = []
+        if os.path.isdir(replay_abs_path):
+            for filename in os.listdir(replay_abs_path):
+                if not filename.endswith('.js'):
+                    continue
+                tests.append(os.path.join(replay_abs_path, filename))
+
+        profiling_count = 1
+        while profiling_count > 0:
+            for test in sorted(tests):
+                subprocess_run(['node', './replay.js', test, '--app-id=%s' % PWA_DEFAULT_ID, '--wait-for=2000'], cwd=PROFILER_PATH)
+            profiling_count -= 1
     print('elapsed time: {} seconds'.format(round(time.time() - now, 2)))
 
     func_id_map = {}
@@ -320,6 +313,7 @@ def run_profiling(env):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--app-id', type=str, help='App ID of a PWA')
     parser.add_argument("command", type=str, help="Available command {init, build, clean, run}.")
     parser.add_argument("command_args", nargs='*', type=str, default='',
         help="command arguments or sub-commands")
@@ -365,7 +359,7 @@ def main():
         for path in [PUPPETEER_PATH]:
             subprocess_run(['rm', '-rf', path + '/node_modules'])
     elif command == 'run':
-        if len(args.command_args) == 1:
+        if len(args.command_args) >= 1:
             arg = args.command_args[0]
 
             cr_exe = './chrome'
@@ -378,7 +372,11 @@ def main():
                     shm_decode = os.path.abspath(args.command_args[1])
                 debloat.chromium(environment, shm_decode, app_id=PWA_DEFAULT_ID)
             elif arg == 'profiling':
-                run_profiling(environment)
+                if len(args.command_args) >= 2:
+                    if validators.url(args.command_args[1]):
+                        run_profiling(environment, None, args.command_args[1])
+                    elif os.path.exists(args.command_args[1]):
+                        run_profiling(environment, args.app_id, args.command_args[1])
             elif validators.url(arg):
                 subprocess_run([cr_exe, '--remote-debugging-port=9222',
                     '--disk-cache-dir=/dev/null',
