@@ -61,11 +61,21 @@ function aptIfElse {
 function installDependenciesWithApt {
     # These are dependencies necessary for building chromium.
     packages=" \
+        bison \
+        clang \
+        cmake \
+        llvm \
+        gperf \
+        openjdk-11-jdk \
+        python2 \
+        python3 \
         "
 
     # These are dependencies necessary for others.
     packages="$packages \
         nodejs \
+        npm \
+        python3-matplotlib \
         python3-pip"
 
     apt-get install $packages
@@ -146,7 +156,6 @@ function installDependenciesWithDnf {
         pango-devel \
         pciutils-devel \
         pulseaudio-libs-devel \
-        python3-matplotlib \
         zlib.i686 \
         httpd \
         mod_ssl \
@@ -160,7 +169,9 @@ function installDependenciesWithDnf {
     packages="$packages \
         nss-tools \
         nodejs \
-        python3-pip"
+        python3-matplotlib \
+        python3-pip \
+        "
 
     dnf install $packages
 }
