@@ -3,9 +3,6 @@ import argparse
 import cxxfilt
 import debloat
 import json
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot
 import multiprocessing
 import numpy
 import os
