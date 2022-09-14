@@ -129,3 +129,8 @@ we can launch the Starbucks PWA like the following.
 ```bash
 $ src/chromium/src/out/debloating/chrome --app-id=oonpikaeehoaiikcikkcnadhgaigameg
 ```
+
+License
+-------
+The own source code for this project is licensed under *the MIT license*,
+which you can find in the LICENSE file. The external resources follow their licenses.
