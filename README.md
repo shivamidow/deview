@@ -1,15 +1,16 @@
 DeView
 ======
-*This repo is a placeholder for anonymous submission of academic work.*
+*This repo is a placeholder for the submission of academic work.*
 
-DeView is a debloating system that eliminates unnecessary web features from a PWA
-(Progressive Web App). It identifies necessary web APIs (i.e., HTML, CSS, JavaScript)
-through exercising a PWA and generates custom-fit web engine binaries for the PWA
-by wiping out unused web APIs.
+DeView is a debloating system that eliminates unnecessary web features from a
+PWA (Progressive Web App). It identifies necessary web APIs (i.e., HTML, CSS,
+JavaScript) through exercising a PWA. It generates custom-fit web
+engine binaries for the PWA by wiping out unnecessary web APIs from the
+binaries.
 
-Environment
------------
-We tested DeView on following systems.
+System Environment
+------------------
+We mainly developed and tested DeView on the following systems.
 * Fedora 32
 * Ubuntu 20.04 LTS
 
@@ -22,7 +23,7 @@ Version Info
 
 Getting the Code
 ----------------
-This repository has a git submodule for modified Chromium.
+This repository has a git submodule for instrumented Chromium.
 ```bash
 $ git clone --recurse-submodules https://github.com/shivamidow/deview.git
 ```
@@ -40,18 +41,23 @@ $ git checkout -b deview fe18a43d590a5eac0d58e7e555b024746ba290ad
 ```
 
 ### Install dependencies ###
-Install dependencies including ones for chromium. This should be enough to do it once.
+Install dependencies, including ones for Chromium.
 ```bash
 $ tools/install-dependencies
 $ python3 dev.py init
 ```
 
 ### Build ###
-We can build everything with a single instruction.
+We build LLVM with custom passes, instrumented Chromium, and web API profiler in order.
+Chromium build scripts use `python2`, so make sure the default `python` indicates `python2`
+when running `$ python --version`.
+
+We can build everything with a single instruction. The build takes hours, so please be patient.
+Using `ccache` can save many hours when re-build is needed.
 ```bash
 $ python3 dev.py build
 ```
-This instruction is the same effect as invoking the following commands in order.
+That instruction is the same effect as invoking the following commands in order.
 ```bash
 $ python3 dev.py build 11vm
 $ python3 dev.py build cr-ir
@@ -62,34 +68,64 @@ $ python3 dev.py build profiler
 
 Profiling a PWA
 ---------------
+Using the Starbucks PWA, we explain the rest of the procedures.
+The app-id of the Starbucks PWA is `oonpikaeehoaiikcikkcnadhgaigameg`.
+
+### Install a PWA into the profiling browser profile
+Run the instrumented browser for profiling and visit the landing page of a PWA.
+```bash
+$ python3 dev.py run profiling http://app.starbucks.com
+```
+Install the PWA by clicking the '+' button in the address bar. Then close the window.
+
 ### Create tests by recording behaviors
 We can use existing tests that
 [Headless Recorder](https://chrome.google.com/webstore/detail/headless-recorder/djeegiggegleadkkbgopoonhjimgehda?hl=en)
-generated. Otherwise, we can create new tests by using the extension.
-Install the browser extension, record, and save behaviors as tests in a directoroy.
+generated. Otherwise, we need to create new tests by using that extension.
+Install the Headless Recorder, record, and save behaviors as tests in a directory.
 
-### Profiling by Replaying
-```bash
-$ python3 dev.py run profiling [test_path]
-```
-This command starts profiling web APIs a PWA (indicated by `PWA_DEFAULT_ID` in `dev.py`) uses
-by replaying all tests in the given directory. We can specify a PWA to profile with '--app-id'.
+### Profiling web API by Replaying
 ```bash
 $ python3 dev.py --app-id=oonpikaeehoaiikcikkcnadhgaigameg run profiling [test_path]
 ```
+This command starts profiling a PWA's web APIs
+by replaying all tests in the `[test_path]` directory.
+We specify which PWA to profile with '--app-id'.
+
+### Profiling web API by Manual Control
+Even without replaying tests, we can manually test the PWA like the following.
+```bash
+$ python3 dev.py --app-id=oonpikaeehoaiikcikkcnadhgaigameg run profiling
+```
+Also, we can open the PWA in the full browser by putting its landing address.
+```bash
+$ python3 dev.py run profiling http://app.starbucks.com
+```
+Once profiling is complete, close the window. Then, the profiling stops.
 
 Debloating a PWA
 ----------------
-Launch a PWA in the instrumented chromium. For instance,
-we can launch the Starbucks PWA like folloiwng.
+### Install a PWA into the debloating browser profile
+Run the instrumented browser for debloating and visit the landing page of a PWA.
 ```bash
-$ out/debloating/chrome --app-id=oonpikaeehoaiikcikkcnadhgaigameg
+$ src/chromium/src/out/debloating/chrome http://app.starbucks.com
 ```
-When a PWA is updated, the instrumented chromium automatically generates
-debloated blink libraries and saves them under
-`~/.config/chromium/Default/Extensions/$APP_ID/$VERSION/lib/`.
+Install the PWA by clicking the '+' button in the address bar. Then close the window.
 
-We can manually trigger the debloating process by using a command below.
+### Debloating
+Using the command below, we debloat web API from the chrome binary based on the profile result.
 ```bash
-$ python3 dev.py --app-id=oonpikaeehoaiikcikkcnadhgaigameg run debloating
+$ python3 dev.py --app-id=oonpikaeehoaiikcikkcnadhgaigameg run debloating [path_to_profile_result]
+```
+The `[path_to_profile_result]` is optional. If that is not specified, a profile result
+located in the same directory of the `chrome` binary is used as default.
+The debloated binaries reside in
+`~/.config/chromium/Default/Extensions/$APP_ID/$VERSION/lib/`.
+When a PWA is updated, the debloating job is automatically re-performed.
+
+### Launch a PWA with Confined web APIs
+Launch a PWA in the instrumented chromium. For instance,
+we can launch the Starbucks PWA like the following.
+```bash
+$ src/chromium/src/out/debloating/chrome --app-id=oonpikaeehoaiikcikkcnadhgaigameg
 ```
