@@ -42,6 +42,8 @@ $ git checkout -b deview fe18a43d590a5eac0d58e7e555b024746ba290ad
 
 ### Install dependencies ###
 Install dependencies, including ones for Chromium.
+Chromium build scripts use `python2`, so make sure the default `python` indicates `python2`
+when running `$ python --version`.
 ```bash
 $ tools/install-dependencies
 $ python3 dev.py init
@@ -49,9 +51,6 @@ $ python3 dev.py init
 
 ### Build ###
 We build LLVM with custom passes, instrumented Chromium, and web API profiler in order.
-Chromium build scripts use `python2`, so make sure the default `python` indicates `python2`
-when running `$ python --version`.
-
 We can build everything with a single instruction. The build takes hours, so please be patient.
 Using `ccache` can save many hours when re-build is needed.
 ```bash
