@@ -10,7 +10,8 @@ binaries.
 
 System Environment
 ------------------
-We mainly developed and tested DeView on the following systems.
+We mainly developed and tested DeView on the following systems that were equipped
+with more than 8 GB of memory.
 * Fedora 32 ([VM Download](http://jack.gtisc.gatech.edu/deview/fedora_32.ova))
 * Ubuntu 20.04 LTS ([VM Download](http://jack.gtisc.gatech.edu/deview/ubuntu_20-04_lts.ova))
 
