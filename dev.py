@@ -302,7 +302,8 @@ def run_profiling(env, app_id, test_path):
             except:
                 func = mangled_func
             f.write('{:<7} {} {} {}\n'.format(line, filename, mangled_func, func))
-        print('{}'.format(output.splitlines()[-1].decode('utf-8')))
+        # A legacy log from Slimium. Disabled since it could mislead a user.
+        # print('{}'.format(output.splitlines()[-1].decode('utf-8')))
 
     install_path = os.path.join(CR_DEBLOATING_BUILD_PATH, 'shm_decode.txt')
     shutil.copyfile(profile_result_path, install_path)
